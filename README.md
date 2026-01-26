@@ -13,12 +13,32 @@ Vollständig anpassbar für jeden Verwendungszweck.
 - 📱 **Responsive** - Optimiert für Desktop, Tablet und Smartphone
 - ⚙️ **Einstellungen** - Farbschema, Zweck und Passwort konfigurierbar
 
-## Voraussetzungen
+<br>
+Hinweis: Das Standardpasswort für Adminfunktionen ist "Jahresplaner"  (bitte ändern)
+<br>
+
+## 🐳 **Docker-Installation**
+
+<table border=2><tr><th>
+<b><u> 🔧 Voraussetzungen </u></b></th><td>
+- docker & compose Plugin
+</td></tr></table>
+<br>
+  
+```bash
+mkdir jahresplaner
+cd jahresplaner
+wget https://raw.githubusercontent.com/bmetallica/Jahresplaner/refs/heads/main/docker-compose.yml
+docker compose up -d
+```
+<br>
+
+## ⚙️ **Oder Manuelle Installation** (Debian/Ubuntu)
+
+### Voraussetzungen
 
 - Node.js (Version 14 oder höher)
 - npm (wird mit Node.js installiert)
-
-## Installation (Debian/Ubuntu)
 
 ### 1. System aktualisieren
 
