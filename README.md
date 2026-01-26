@@ -3,6 +3,8 @@
 Ein flexibler, webbasierter Jahresplaner für Vereine, Organisationen und Gruppen. 
 Vollständig anpassbar für jeden Verwendungszweck.
 
+![DPM Screenshot](https://github.com/bmetallica/Jahresplaner/blob/main/jahresplaner.jpg)
+
 ## Features
 
 - 📅 **Übersichtliche Jahresplanung** - Alle Termine auf einen Blick
