@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pfadfinder Kurtscheid</title>
+    <style>
+        :root { 
+            --dpsg-rot: #E74C3C;
+            --dpsg-blau: #2E86DE;
+            --dpsg-dunkelblau: #1E3A8A;
+            --dpsg-weiß: #FFFFFF;
+            --dpsg-schwarz: #000000;
+            --dpsg-dark: #0F1419;
+            --dpsg-card-bg: #1A1F2E;
+            --dpsg-input-bg: #252D3D;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { 
+            background: linear-gradient(135deg, #0F1419 0%, #1A2A3A 50%, #0F1419 100%);
+            color: #E0E0E0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; 
+            padding: 16px; 
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        /* Header */
+        .header { 
+            text-align: center; 
+            margin-bottom: 24px; 
+            padding: 24px 16px;
+            background: linear-gradient(135deg, var(--dpsg-blau) 0%, var(--dpsg-dunkelblau) 100%);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(46, 134, 222, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        h1 { 
+            color: var(--dpsg-weiß); 
+            text-align: center; 
+            text-transform: uppercase; 
+            font-size: clamp(1.2em, 4vw, 2em);
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: clamp(0.8em, 2.5vw, 0.95em);
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        /* Kalender Buttons */
+        .cal-nav { 
+            display: flex; 
+            justify-content: center; 
+            gap: 12px; 
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+        .btn { 
+            border: none;
+            padding: 12px 24px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            border-radius: 10px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--dpsg-card-bg);
+            color: var(--dpsg-blau);
+            border: 2px solid var(--dpsg-blau);
+            font-size: clamp(0.85em, 2vw, 0.95em);
+            backdrop-filter: blur(10px);
+        }
+        .btn:hover { 
+            background: var(--dpsg-blau);
+            color: white;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(46, 134, 222, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--dpsg-card-bg);
+            color: #888;
+            border-color: #888;
+            transform: none;
+        }
+        .btn:disabled:hover {
+            background: var(--dpsg-card-bg);
+            color: #888;
+            box-shadow: none;
+        }
+        .btn:active { transform: translateY(-2px); }
+        .btn-green { 
+            background: linear-gradient(135deg, var(--dpsg-rot) 0%, #D63031 100%);
+            color: white;
+            border: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 14px 20px;
+        }
+        .btn-green:hover {
+            box-shadow: 0 12px 24px rgba(231, 76, 60, 0.4);
+            transform: translateY(-4px);
+        }
+        
+        /* Einstellungsbutton */
+        .btn-settings { 
+            background: transparent;
+            color: var(--dpsg-blau);
+            border: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 0;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-settings:hover {
+            color: var(--dpsg-rot);
+            transform: rotate(90deg) scale(1.2);
+            box-shadow: none;
+        }
+
+        /* Einstellungsmodal */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--dpsg-card-bg);
+            border: 2px solid var(--dpsg-blau);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 2000;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s ease;
+        }
+        .settings-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1999;
+        }
+        .settings-modal h3 {
+            color: var(--dpsg-blau);
+            margin-bottom: 24px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .settings-group {
+            margin-bottom: 24px;
+        }
+        .settings-group label {
+            display: block;
+            color: var(--dpsg-blau);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        .settings-group input[type="text"],
+        .settings-group input[type="password"],
+        .settings-group input[type="color"] {
+            width: 100%;
+            margin: 0;
+        }
+        .settings-group input[type="color"] {
+            height: 50px;
+            cursor: pointer;
+        }
+        .settings-group select {
+            width: 100%;
+            background: var(--dpsg-input-bg);
+            color: var(--dpsg-weiß);
+            border: 1px solid rgba(46, 134, 222, 0.3);
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+        }
+        .settings-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        .settings-buttons .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* Hilfe Modal */
+        #help-modal { 
+            display: none; 
+            background: var(--dpsg-card-bg);
+            border: 1px solid rgba(46, 134, 222, 0.3);
+            border-top: 4px solid var(--dpsg-blau);
+            padding: 28px;
+            border-radius: 12px;
+            margin-bottom: 24px; 
+            font-size: 0.95em;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #help-modal h3 { 
+            color: var(--dpsg-rot);
+            margin-bottom: 16px;
+            font-size: 1.2em;
+        }
+        #help-modal li { 
+            margin-bottom: 12px;
+            line-height: 1.8;
+            color: #D0D0D0;
+        }
+        #help-modal a { 
+            color: var(--dpsg-blau); 
+            text-decoration: none; 
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        #help-modal a:hover { color: var(--dpsg-rot); }
+
+        /* Termin Karten */
+        .card { 
+            background: var(--dpsg-card-bg);
+            border-left: 5px solid var(--dpsg-rot);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(46, 134, 222, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .card:hover {
+            background: var(--dpsg-card-bg);
+            border-left-color: var(--dpsg-blau);
+            transform: translateX(4px);
+            box-shadow: 0 8px 24px rgba(46, 134, 222, 0.15);
+        }
+        .card-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .weekday { 
+            color: white;
+            font-weight: 700; 
+            min-width: 50px;
+            font-size: 0.85em;
+            background: linear-gradient(135deg, var(--dpsg-blau) 0%, #1E86DE 100%);
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .date-text { 
+            color: var(--dpsg-rot);
+            font-family: 'Courier New', monospace; 
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+        .event-title { 
+            font-size: clamp(1em, 3vw, 1.2em); 
+            font-weight: 700; 
+            color: var(--dpsg-weiß);
+            flex-grow: 1;
+        }
+        
+        .sub-list { 
+            margin-left: 32px;
+            border-left: 2px solid rgba(46, 134, 222, 0.4);
+            padding-left: 16px;
+        }
+        .sub-item { 
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            color: #B0B0B0;
+            line-height: 1.6;
+        }
+        .sub-time { 
+            color: var(--dpsg-blau);
+            font-family: 'Courier New', monospace; 
+            margin-right: 8px; 
+            font-weight: 600;
+        }
+
+        /* Admin */
+        #admin-area { 
+            display: none; 
+            background: var(--dpsg-card-bg);
+            border: 1px solid rgba(46, 134, 222, 0.3);
+            border-top: 4px solid var(--dpsg-rot);
+            padding: 28px;
+            border-radius: 12px;
+            margin-top: 48px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+        #admin-area h3 {
+            color: var(--dpsg-rot);
+            margin-bottom: 24px;
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .admin-header h3 {
+            margin: 0;
+            flex-grow: 1;
+        }
+        .admin-header .btn-save {
+            margin-left: 16px;
+            white-space: nowrap;
+        }
+        .admin-card { 
+            background: rgba(46, 134, 222, 0.05);
+            padding: 16px; 
+            margin-bottom: 16px; 
+            border-radius: 8px; 
+            border: 1px solid rgba(46, 134, 222, 0.15);
+        }
+        input { 
+            background: var(--dpsg-input-bg);
+            color: var(--dpsg-weiß);
+            border: 1px solid rgba(46, 134, 222, 0.3);
+            padding: 12px 14px; 
+            border-radius: 8px; 
+            margin: 6px;
+            font-size: 0.95em;
+            transition: all 0.2s;
+        }
+        input::placeholder { color: #707070; }
+        input:focus { 
+            outline: none;
+            border-color: var(--dpsg-blau);
+            background: rgba(46, 134, 222, 0.1);
+            box-shadow: 0 0 0 3px rgba(46, 134, 222, 0.15);
+        }
+        .del-btn { 
+            background: linear-gradient(135deg, var(--dpsg-rot) 0%, #D63031 100%);
+            color: white;
+            border: none;
+        }
+        .del-btn:hover {
+            box-shadow: 0 8px 16px rgba(231, 76, 60, 0.3);
+        }
+
+        .admin-toggle {
+            text-align: center; 
+            color: var(--dpsg-blau); 
+            cursor: pointer; 
+            margin-top: 64px;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .admin-toggle:hover { 
+            color: var(--dpsg-rot);
+        }
+        
+        .admin-event-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 12px;
+        }
+        .admin-date-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .admin-subevent-row {
+            margin-left: 40px;
+            display: flex;
+            gap: 12px;
+            margin-top: 5px;
+            align-items: flex-end;
+        }
+        .admin-time-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .admin-main-event {
+            background: rgba(46, 134, 222, 0.1);
+            border: 2px solid var(--dpsg-blau);
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+        .admin-subevents-container {
+            background: rgba(46, 134, 222, 0.05);
+            border-left: 4px solid var(--dpsg-blau);
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 6px;
+        }
+        .admin-subevent-item {
+            background: rgba(231, 76, 60, 0.08);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+        .admin-subevent-item:last-of-type {
+            margin-bottom: 0;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .container { max-width: 100%; }
+            .header { 
+                margin-bottom: 20px; 
+                padding: 18px 12px;
+            }
+            h1 { font-size: 1.3em; }
+            .cal-nav { gap: 8px; margin-bottom: 20px; }
+            .btn { padding: 10px 16px; font-size: 0.85em; }
+            .card { padding: 16px; margin-bottom: 12px; }
+            .card-header { gap: 8px; }
+            .event-title { font-size: 1em; }
+            .sub-list { margin-left: 24px; }
+            #admin-area { padding: 20px; }
+            .admin-card { padding: 12px; }
+            input { margin: 4px; padding: 10px 12px; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .header { padding: 16px 10px; margin-bottom: 16px; }
+            h1 { font-size: 1.1em; }
+            .header-subtitle { font-size: 0.75em; }
+            .cal-nav { gap: 6px; margin-bottom: 16px; flex-direction: column; }
+            .btn { width: 100%; padding: 12px; justify-content: center; }
+            #print-btn-mobile { display: block !important; }
+            #print-btn-desktop { display: none !important; }
+            .btn-green { position: fixed; top: 16px; right: 16px; width: auto; padding: 12px 16px; }
+            .btn-settings { top: 16px; left: 16px; font-size: 1.3em; }
+            .card { padding: 12px; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+            .weekday { width: 100%; }
+            .event-title { font-size: 0.95em; }
+            .sub-list { margin-left: 16px; }
+            #admin-area { padding: 16px; margin-top: 32px; }
+            .admin-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .admin-header h3 { flex-grow: 0; }
+            .admin-header .btn-save { width: 100%; margin-left: 0; }
+            .admin-card { padding: 0; background: transparent; border: none; }
+            .admin-main-event { padding: 12px; margin-bottom: 12px; border: 2px solid var(--dpsg-blau); }
+            .admin-event-row { flex-direction: column; align-items: stretch; gap: 8px; margin: 0; }
+            .admin-date-group { gap: 3px; }
+            .admin-date-group input { width: 100%; margin: 0 0 6px 0; box-sizing: border-box; }
+            .admin-subevents-container { padding: 8px; margin-top: 8px; }
+            .admin-subevent-item { padding: 10px; margin-bottom: 8px; }
+            .admin-subevent-row { flex-direction: column; align-items: stretch; margin-left: 0; gap: 8px; }
+            .admin-time-group input { width: 100%; margin: 0 0 6px 0; box-sizing: border-box; }
+            input { 
+                width: 100%; 
+                margin: 6px 0;
+                padding: 12px;
+                font-size: 16px;
+                box-sizing: border-box;
+            }
+            .del-btn { width: 100%; }
+            #help-modal { padding: 20px; }
+            .settings-modal { 
+                width: 95%; 
+                padding: 24px; 
+                max-height: 85vh;
+            }
+            .settings-buttons { 
+                flex-direction: column; 
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body { 
+                background: white; 
+                color: black; 
+                padding: 10mm;
+                font-size: 10pt;
+                line-height: 1.3;
+            }
+            .header { 
+                background: white;
+                color: #333;
+                border: 1px solid #333;
+                padding: 8px 12px !important;
+                margin-bottom: 12px !important;
+            }
+            h1 { 
+                color: black;
+                font-size: 16pt !important;
+                margin-bottom: 2px !important;
+            }
+            .header-subtitle {
+                font-size: 9pt !important;
+            }
+            .cal-nav, #help-modal, #admin-area, .admin-toggle, #print-btn-mobile, #print-btn-desktop, .btn-settings, .settings-modal, .settings-overlay { 
+                display: none !important; 
+            }
+            .card { 
+                background: white; 
+                border-left: 3px solid #333;
+                page-break-inside: avoid;
+                color: black;
+                padding: 8px 10px !important;
+                margin-bottom: 8px !important;
+                font-size: 9pt;
+            }
+            .card-header { 
+                display: block;
+                font-size: 10pt;
+            }
+            .weekday, .date-text { 
+                display: inline;
+                background: none;
+                color: black;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1 id="page-title">Termine</h1>
+    </div>
+
+    <div class="cal-nav">
+        <button class="btn" onclick="copyCalLink()">📅 Kalender abonnieren</button>
+        <button class="btn" onclick="toggleHelp()">❓ Hilfe</button>
+        <button class="btn" id="print-btn-mobile" onclick="printEvents()" style="display:none;">🖨️ Drucken</button>
+    </div>
+    
+    <button class="btn btn-settings" onclick="openSettings()">⚙️</button>
+    <button class="btn btn-green" id="print-btn-desktop" onclick="printEvents()">🖨️ Drucken</button>
+
+    <!-- Einstellungsmodal -->
+    <div class="settings-overlay" id="settings-overlay" onclick="closeSettings()"></div>
+    <div class="settings-modal" id="settings-modal">
+        <h3>⚙️ Einstellungen</h3>
+        
+        <div class="settings-group">
+            <label>Passwort (zum Entsperren der Einstellungen):</label>
+            <input type="password" id="settings-password" placeholder="Passwort eingeben">
+        </div>
+
+        <div class="settings-group">
+            <label>Zweck (ersetzt "Termine" im Header und Titel):</label>
+            <input type="text" id="settings-purpose" placeholder="z.B. Termine, Veranstaltungen, Events...">
+        </div>
+
+        <div class="settings-group">
+            <label>Hauptfarbe:</label>
+            <input type="color" id="settings-mainColor">
+        </div>
+
+        <div class="settings-group">
+            <label>Akzentfarbe:</label>
+            <input type="color" id="settings-accentColor">
+        </div>
+
+        <div class="settings-group">
+            <label>Hintergrundfarbe:</label>
+            <input type="color" id="settings-backgroundColor">
+        </div>
+
+        <div class="settings-group">
+            <label>Neues Passwort (leer lassen, um nicht zu ändern):</label>
+            <input type="password" id="settings-newPassword" placeholder="Neues Passwort (optional)">
+        </div>
+
+        <div class="settings-buttons">
+            <button class="btn" onclick="closeSettings()">Abbrechen</button>
+            <button class="btn" onclick="saveSettings()" style="background: linear-gradient(135deg, var(--dpsg-rot) 0%, #D63031 100%); color: white; border: none;">💾 Speichern</button>
+        </div>
+    </div>
+
+    <div id="help-modal">
+        <h3>📅 Kalender abonnieren – So geht's:</h3>
+        <p>Abonniere den Kalender, damit Termine automatisch auf deinem Handy erscheinen und aktuell bleiben:</p>
+        <ul>
+            <li><strong>iPhone / Apple:</strong> Einstellungen > Kalender > Accounts > Account hinzufügen > Andere > Kalenderabo hinzufügen > Link dort einfügen.</li>
+            <li><strong>Android / Google:</strong> <a href="https://calendar.google.com" target="_blank">calendar.google.com</a> im Browser öffnen > Linkes Menü "+" bei "Weiteren Kalender hinzufügen" > Per URL > Link dort einfügen.</li>
+            <li><strong>Outlook:</strong> Kalender hinzufügen > Aus dem Internet > Link einfügen.</li>
+        </ul>
+        <button class="btn" onclick="toggleHelp()" style="width:100%; margin-top: 16px; justify-content: center;">Schließen</button>
+    </div>
+
+    <div id="display-list">Lade Termine...</div>
+
+    <div class="admin-toggle" onclick="document.getElementById('admin-area').style.display='block'">🔓 Admin Panel öffnen</div>
+
+    <div id="admin-area">
+        <div class="admin-header">
+            <h3>🏕️ Admin Panel</h3>
+            <button class="btn btn-save" id="save-btn" onclick="saveAll()" disabled title="Bitte Passwort angeben">✅ SPEICHERN & LIVE SETZEN</button>
+        </div>
+        <input type="password" id="admin-pw" placeholder="Passwort (muss vor dem Speichern angegeben werden)" style="width:100%; margin-bottom:16px;" oninput="updateSaveButtonState()">
+        
+        <div style="background: rgba(46, 134, 222, 0.05); padding: 16px; margin-bottom: 16px; border-radius: 8px; border: 1px solid rgba(46, 134, 222, 0.15);">
+            <label style="color: var(--dpsg-blau); font-weight: 600;">📅 Jahresübersicht für:</label><br>
+            <input type="number" id="admin-year" min="2020" max="2050" placeholder="Jahr" style="width: 120px; margin-top: 8px;">
+        </div>
+        
+        <div id="admin-rows"></div>
+        <button class="btn" onclick="addNewEvent()" style="width:100%; margin-bottom: 12px; justify-content: center;">+ Haupttermin hinzufügen</button>
+    </div>
+</div>
+
+<script>
+    let events = [];
+    let config = { year: new Date().getFullYear() };
+    const weekdays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+
+    function formatDate(dateStr) {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+    }
+
+    async function load() {
+        const configRes = await fetch('/api/config');
+        config = await configRes.json();
+        const res = await fetch('/api/events');
+        events = await res.json();
+        applySettings();
+        renderView();
+        renderAdmin();
+    }
+
+    function applySettings() {
+        // Farben anwenden
+        document.documentElement.style.setProperty('--dpsg-blau', config.mainColor || '#2E86DE');
+        document.documentElement.style.setProperty('--dpsg-rot', config.accentColor || '#E74C3C');
+        
+        if (config.backgroundColor) {
+            document.body.style.background = `linear-gradient(135deg, ${config.backgroundColor} 0%, ${adjustColorBrightness(config.backgroundColor, 20)} 50%, ${config.backgroundColor} 100%)`;
+        }
+        
+        // Zweck anwenden
+        const purpose = config.purpose || 'Termine';
+        document.title = purpose + ' ' + config.year;
+    }
+
+    function adjustColorBrightness(color, percent) {
+        const num = parseInt(color.replace("#",""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) + amt;
+        const G = (num >> 8 & 0x00FF) + amt;
+        const B = (num & 0x0000FF) + amt;
+        return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+            (G<255?G<1?0:G:255)*0x100 +
+            (B<255?B<1?0:B:255))
+            .toString(16).slice(1);
+    }
+
+    function openSettings() {
+        document.getElementById('settings-overlay').style.display = 'block';
+        document.getElementById('settings-modal').style.display = 'block';
+        
+        // Felder mit aktuellen Werten füllen
+        document.getElementById('settings-purpose').value = config.purpose || 'Termine';
+        document.getElementById('settings-mainColor').value = config.mainColor || '#2E86DE';
+        document.getElementById('settings-accentColor').value = config.accentColor || '#E74C3C';
+        document.getElementById('settings-backgroundColor').value = config.backgroundColor || '#0F1419';
+        document.getElementById('settings-password').value = '';
+        document.getElementById('settings-newPassword').value = '';
+    }
+
+    function closeSettings() {
+        document.getElementById('settings-overlay').style.display = 'none';
+        document.getElementById('settings-modal').style.display = 'none';
+    }
+
+    async function saveSettings() {
+        const password = document.getElementById('settings-password').value;
+        if (!password) {
+            alert('Bitte Passwort eingeben!');
+            return;
+        }
+
+        const newPassword = document.getElementById('settings-newPassword').value;
+        const newConfig = {
+            year: config.year,
+            purpose: document.getElementById('settings-purpose').value || 'Termine',
+            mainColor: document.getElementById('settings-mainColor').value,
+            accentColor: document.getElementById('settings-accentColor').value,
+            backgroundColor: document.getElementById('settings-backgroundColor').value,
+            password: newPassword || config.password
+        };
+
+        const res = await fetch('/api/config/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password: password, config: newConfig })
+        });
+
+        if (res.ok) {
+            alert('Einstellungen gespeichert!');
+            await load();
+            closeSettings();
+        } else {
+            alert('Passwort falsch!');
+        }
+    }
+
+    function renderView() {
+        const purpose = config.purpose || 'Termine';
+        document.getElementById('page-title').textContent = `${purpose} ${config.year}`;
+        document.getElementById('display-list').innerHTML = events.map(e => {
+            const start = new Date(e.DATE);
+            const dateDisplay = e.END_DATE ? `${formatDate(e.DATE)} - ${formatDate(e.END_DATE)}` : formatDate(e.DATE);
+            const subHtml = (e.SUBEVENTS || []).map(s => `
+                <div class="sub-item">${s.time ? `<span class="sub-time">${s.time}</span>` : '• '}${s.text}</div>
+            `).join('');
+
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="weekday">${weekdays[start.getDay()]}</span>
+                        <span class="date-text">${dateDisplay}</span>
+                        <span class="event-title">${e.TITLE}</span>
+                    </div>
+                    <div class="sub-list">${subHtml}</div>
+                </div>`;
+        }).join('');
+    }
+
+    function renderAdmin() {
+        document.getElementById('admin-year').value = config.year;
+        const container = document.getElementById('admin-rows');
+        container.innerHTML = events.map((e, i) => `
+            <div class="admin-card">
+                <div class="admin-main-event">
+                    <div class="admin-event-row">
+                        <div class="admin-date-group">
+                            <label style="font-size: 0.8em; color: var(--dpsg-blau); font-weight: 600;">von</label>
+                            <input type="date" value="${e.DATE}" onchange="events[${i}].DATE=this.value">
+                        </div>
+                        <div class="admin-date-group">
+                            <label style="font-size: 0.8em; color: var(--dpsg-blau); font-weight: 600;">bis</label>
+                            <input type="date" value="${e.END_DATE || ''}" onchange="events[${i}].END_DATE=this.value">
+                        </div>
+                        <div class="admin-date-group" style="flex-grow: 1;">
+                            <label style="font-size: 0.8em; color: var(--dpsg-blau); font-weight: 600;">Titel</label>
+                            <input type="text" value="${e.TITLE}" onchange="events[${i}].TITLE=this.value">
+                        </div>
+                        <button class="btn del-btn" onclick="events.splice(${i},1);renderAdmin()" style="align-self: flex-end; white-space: nowrap;">X</button>
+                    </div>
+                    ${(e.SUBEVENTS || []).length > 0 ? `
+                        <div class="admin-subevents-container">
+                            ${(e.SUBEVENTS || []).map((s, si) => `
+                                <div class="admin-subevent-item">
+                                    <div class="admin-subevent-row">
+                                        <div class="admin-time-group">
+                                            <label style="font-size: 0.75em; color: var(--dpsg-rot); font-weight: 600;">Zeit (optional)</label>
+                                            <input type="time" value="${s.time}" onchange="events[${i}].SUBEVENTS[${si}].time=this.value">
+                                        </div>
+                                        <div class="admin-time-group" style="flex-grow: 1;">
+                                            <label style="font-size: 0.75em; color: var(--dpsg-rot); font-weight: 600;">Text</label>
+                                            <input type="text" value="${s.text}" onchange="events[${i}].SUBEVENTS[${si}].text=this.value">
+                                        </div>
+                                        <button class="btn del-btn" onclick="events[${i}].SUBEVENTS.splice(${si},1);renderAdmin()" style="align-self: flex-end; white-space: nowrap;">-</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <button class="btn" style="font-size:0.75em; margin:8px 0 0 0; background: white; color: var(--dpsg-rot); border-color: var(--dpsg-rot); width: 100%; justify-content: center;" onclick="events[${i}].SUBEVENTS.push({time:'',text:''});renderAdmin()">+ Unterpunkt hinzufügen</button>
+                        </div>
+                    ` : `
+                        <button class="btn" style="font-size:0.8em; margin:12px 0 0 0; background: white; color: var(--dpsg-blau); border-color: var(--dpsg-blau); width: 100%; justify-content: center;" onclick="events[${i}].SUBEVENTS.push({time:'',text:''});renderAdmin()">+ Unterpunkt hinzufügen</button>
+                    `}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function addNewEvent() { events.push({ DATE: '', END_DATE: '', TITLE: '', SUBEVENTS: [] }); renderAdmin(); }
+    function toggleHelp() { 
+        const m = document.getElementById('help-modal');
+        m.style.display = m.style.display === 'block' ? 'none' : 'block';
+    }
+    function updateSaveButtonState() {
+        const pwField = document.getElementById('admin-pw');
+        const saveBtn = document.getElementById('save-btn');
+        if (pwField.value.trim() === '') {
+            saveBtn.disabled = true;
+            saveBtn.title = 'Bitte Passwort angeben';
+        } else {
+            saveBtn.disabled = false;
+            saveBtn.title = '';
+        }
+    }
+    function copyCalLink() {
+        const url = "https://rfrjp.home-bmetallica.de/api/calendar.ics";
+        navigator.clipboard.writeText(url);
+        alert("Link kopiert! Nutze den Hilfe-Button für die Anleitung zum Einfügen.");
+    }
+
+    function printEvents() {
+        window.print();
+    }
+
+    async function saveAll() {
+        const pw = document.getElementById('admin-pw').value;
+        const year = parseInt(document.getElementById('admin-year').value);
+        
+        if (!year || year < 2020 || year > 2050) {
+            alert("Bitte geben Sie ein gültiges Jahr ein (2020-2050)");
+            return;
+        }
+
+        // Speichere Konfiguration - nur Jahr ändern, Rest beibehalten
+        const configRes = await fetch('/api/config/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password: pw, config: { year: year } })
+        });
+
+        if (!configRes.ok) {
+            alert("Passwort falsch!");
+            return;
+        }
+
+        // Speichere Events
+        const res = await fetch('/api/events/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password: pw, events: events.map(e => ({date: e.DATE, endDate: e.END_DATE, title: e.TITLE, subevents: e.SUBEVENTS})) })
+        });
+        if(res.ok) { alert("Gespeichert!"); load(); } else { alert("Passwort falsch!"); }
+    }
+
+    load();
+</script>
+</body>
+</html>
