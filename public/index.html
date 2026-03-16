@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pfadfinder Kurtscheid</title>
+    <title>Jahresplaner</title>
     <style>
         :root { 
             --dpsg-rot: #E74C3C;
@@ -551,6 +551,28 @@
                 padding: 0;
             }
         }
+        /* Copyright-Badge */
+        #copyright-badge {
+            position: fixed;
+            bottom: 14px;
+            right: 16px;
+            z-index: 9999;
+            background: rgba(15, 20, 25, 0.82);
+            border: 1px solid rgba(46, 134, 222, 0.35);
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 0.72em;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        }
+        #copyright-badge a {
+            color: #90b8e0;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        #copyright-badge a:hover { color: #2E86DE; text-decoration: underline; }
+        
     </style>
 </head>
 <body>
@@ -867,5 +889,14 @@
 
     load();
 </script>
+<div id="copyright-badge">
+    <a href="https://github.com/bmetallica/Jahresplaner" target="_blank" rel="noopener noreferrer">
+        &copy; <span id="copyright-year"></span> bmetallica &mdash; MIT License
+    </a>
+</div>
+<script>
+    document.getElementById('copyright-year').textContent = new Date().getFullYear();
+</script>
+
 </body>
 </html>
